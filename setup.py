@@ -44,7 +44,11 @@ setup(
         'mctools.mctools': './mctools',
         'mctools.utils': './utils'
     },
-    package_data={},
+    package_data={
+        'mctools.mctools': [
+            'commands/*'
+        ]
+    },
     entry_points={
         'console_scripts': [
             'mctools = mctools.mctools.cli:cli'

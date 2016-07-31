@@ -4,8 +4,8 @@ import requests
 
 class CouchPotato(object):
 
-    def __init__(self, url, port, api_key):
-        self.url = url
+    def __init__(self, base_url, port, api_key):
+        self.base_url = base_url
         self.port = port
         self.api_key = api_key
 

@@ -9,7 +9,7 @@ from mctools.utils.sickrage import SickRage
               help="Port that SickRage is listening to")
 @pass_context
 def cli(ctx, port):
-    ctx.sickrage = SickRage(ctx.base_url, ctx.sickrage_port, ctx.sickrage_api_key)
+    ctx.sickrage = SickRage(ctx.config['base_url'], ctx.config['sickrage_port'], ctx.credentials['sickrage']['api_key'])
 
 
 @cli.command('shows', short_help="Lists the available shows")

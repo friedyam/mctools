@@ -9,7 +9,7 @@ from mctools.utils.couchpotato import CouchPotato
               help="Port that SickRage is listening to")
 @pass_context
 def cli(ctx, port):
-    ctx.couchpotato = CouchPotato(ctx.base_url, ctx.couchpotato_port, ctx.couchpotato_api_key)
+    ctx.couchpotato = CouchPotato(ctx.config['base_url'], ctx.config['couchpotato_port'], ctx.credentials['couchpotato']['api_key'])
 
 
 @cli.command('restart', short_help="Restarts CouchPotato")

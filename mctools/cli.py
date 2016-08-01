@@ -1,6 +1,7 @@
 import os
 import sys
 import click
+import yaml
 
 
 class Context(object):
@@ -8,11 +9,8 @@ class Context(object):
     def __init__(self):
         self.debug = False
         self.quiet = False
-        self.base_url = "192.168.0.4"
-        self.sickrage_api_key = None
-        self.sickrage_port = 8081
-        self.couchpotato_api_key = None
-        self.couchpotato_port = 5050
+        self.config = None
+        self.credentials = None
         self.sickrage = None
         self.couchpotato = None
 
@@ -32,6 +30,14 @@ class Context(object):
             elif lvl in ['d', 'debug']:
                 if self.debug:
                     click.echo(msg, file=sys.stdout)
+
+    def set_credential_and_config(self, credential_file):
+        """Sets various credentials"""
+        with open(credential_file, 'r') as f:
+            file = yaml.load(f.read())
+
+        self.credentials = file['credentials']
+        self.config = file['config']
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
@@ -70,8 +76,17 @@ class ComplexCLI(click.MultiCommand):
 @click.option('-q', '--quiet',
               is_flag=True,
               help="Enables quiet mode")
+@click.option('-c', '--credential-file',
+              type=click.Path(exists=True, dir_okay=False, resolve_path=True),
+              default=os.path.expanduser(os.environ.get("MCTOOLS_CREDENTIALS", "~/.mctools.yml")),
+              help="Credentials file for mctools to use to communicate with various APIs")
 @pass_context
-def cli(ctx, debug, quiet):
+def cli(ctx, debug, quiet, credential_file):
     """mctools command line interface."""
     ctx.debug = debug
     ctx.quiet = quiet
+    if credential_file:
+        ctx.set_credential_and_config(credential_file)
+    else:
+        click.echo("Credential File must be defined")
+        sys.exit(1)

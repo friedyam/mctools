@@ -6,6 +6,7 @@ movie_fields = [
     'title',
     'released',
     'plot',
+    'runtime',
     'genres',
     'directors',
     'writers',
@@ -54,8 +55,38 @@ class CouchPotato(object):
         
         return msg
 
-    def search(self):
+    def search(self, query):
         cmd = 'search'
+        params = {
+            'q': query
+        }
+
+        results = self.get(cmd, params=params)['movies']
+
+        movies = []
+        for movie in results:
+            try:
+                movies.append(
+                    Movie(
+                        title=movie.get('original_title', ''),
+                        released=movie.get('year', 0),
+                        plot=movie.get('plot', ''),
+                        runtime=movie.get('runtime', 0),
+                        genres=movie.get('genre', []),
+                        directors=movie.get('directors', []),
+                        writers=movie.get('writers', []),
+                        rating=movie.get('rating', {}).get('imdb', [None])[0],
+                        status="In Library" if movie.get('in_library', False) else "Missing",
+                        id=movie.get('imdb', ''),
+                        location=None,
+                        quality=None
+                    )
+                )
+            except KeyError:
+                print(json.dumps(movie, indent=4))
+                raise
+
+        return movies
 
     def add_movie(self):
         cmd = 'movie.add'
@@ -69,10 +100,10 @@ class CouchPotato(object):
         if search:
             params['search'] = search
 
-        raw_data = self.get(cmd, params=params)['movies']
+        results = self.get(cmd, params=params)['movies']
 
         movies = []
-        for movie in raw_data:
+        for movie in results:
             release_info = [r for r in movie['releases'] if 'files' in r]
             try:
                 movies.append(
@@ -80,6 +111,7 @@ class CouchPotato(object):
                         title=movie['title'],
                         released=movie['info']['released'] if 'released' in movie['info'] else movie['info']['year'],
                         plot=movie['info']['plot'],
+                        runtime=movie['info']['runtime'],
                         genres=movie['info']['genres'],
                         directors=movie['info']['directors'],
                         writers=movie['info']['writers'],

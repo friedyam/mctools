@@ -34,5 +34,16 @@ def renamer(ctx):
 @pass_context
 def movies(ctx, name):
     movies = ctx.couchpotato.list_movies(search=name)
+    if len(movies) > 10:
+        movies = movies[:10]
+    for movie in movies:
+        click.echo(movie.title)
+
+
+@cli.command('search', short_help="")
+@click.argument('query')
+@pass_context
+def search(ctx, query):
+    movies = ctx.couchpotato.search(query=query)
     for movie in movies:
         click.echo(movie.title)

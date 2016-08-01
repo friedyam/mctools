@@ -1,5 +1,21 @@
+from collections import namedtuple
 import json
 import requests
+
+movie_fields = [
+    'title',
+    'released',
+    'plot',
+    'genres',
+    'directors',
+    'writers',
+    'rating',
+    'status',
+    'id',
+    'location',
+    'quality'
+]
+Movie = namedtuple("Movie", field_names=movie_fields)
 
 
 class CouchPotato(object):
@@ -9,19 +25,76 @@ class CouchPotato(object):
         self.port = port
         self.api_key = api_key
 
-    def url(self):
-        return "http://{0}:{1}/api/{2}".format(self.base_url, self.port, self.api_key)
+    def url(self, cmd):
+        return "http://{0}:{1}/api/{2}/{3}".format(self.base_url, self.port, self.api_key, cmd)
 
-    def get(self, params, data=None):
+    def get(self, cmd, params=None, data=None):
         try:
-            r = requests.post(self.url(), params=params, data=data)
+            r = requests.get(self.url(cmd=cmd), params=params, data=data)
             return r.json()
         except json.JSONDecodeError:
             print("There was an error decoding the response json")
 
-    def post(self, params, data=None):
+    def post(self, cmd, params=None, data=None):
         try:
-            r = requests.post(self.url(), params=params, data=data)
-            return r.json()
+            r = requests.post(self.url(cmd=cmd), params=params, data=data)
+            return r.text
         except json.JSONDecodeError:
             print("There was an error decoding the response json")
+
+    def restart(self):
+        cmd = 'app.restart'
+        msg = self.post(cmd)
+
+        return msg
+
+    def renamer(self):
+        cmd = 'renamer.scan'
+        msg = self.post(cmd)
+        
+        return msg
+
+    def search(self):
+        cmd = 'search'
+
+    def add_movie(self):
+        cmd = 'movie.add'
+
+    def list_movies(self, search=None):
+        cmd = 'movie.list'
+        params = {
+            'status': ['done']
+        }
+
+        if search:
+            params['search'] = search
+
+        raw_data = self.get(cmd, params=params)['movies']
+
+        movies = []
+        for movie in raw_data:
+            release_info = [r for r in movie['releases'] if 'files' in r]
+            try:
+                movies.append(
+                    Movie(
+                        title=movie['title'],
+                        released=movie['info']['released'] if 'released' in movie['info'] else movie['info']['year'],
+                        plot=movie['info']['plot'],
+                        genres=movie['info']['genres'],
+                        directors=movie['info']['directors'],
+                        writers=movie['info']['writers'],
+                        rating=movie['info']['rating']['imdb'][0],
+                        status=movie['status'],
+                        id=movie['_id'],
+                        location=release_info[0]['files']['movie'][0],
+                        quality=release_info[0]['quality']
+                    )
+                )
+            except KeyError:
+                print(json.dumps(movie, indent=4))
+                raise
+
+        return movies
+
+    def search_torrents(self):
+        cmd = 'movie.searcher.full_search'

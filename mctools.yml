@@ -1,0 +1,14 @@
+credentials:
+    couchpotato:
+        api_key: None
+    kodi:
+        username: username
+        password: None
+    sickrage:
+        api_key: None
+
+config:
+    base_url: 192.168.0.4
+    couchpotato_port: 5050
+    sickrage_port: 8081
+    kodi_port: 8080

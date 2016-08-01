@@ -4,14 +4,16 @@ import requests
 
 
 class Kodi(object):
-    def __init__(self, base_url, port, api_key):
+    def __init__(self, base_url, port, username, password):
         self.base_url = base_url
         self.port = port
+        self.auth = (username, password)
 
     def url(self):
         return "http://{0}:{1}/jsonrpc".format(self.base_url, self.port)
 
-    def build_request(self, cmd, params):
+    @staticmethod
+    def build_request(cmd, params):
         request = {
             'request': {
                 'jsonrpc': '2.0',
@@ -25,15 +27,20 @@ class Kodi(object):
 
     def get(self, cmd, params=None, data=None):
         try:
-            r = requests.get(self.url(), params=self.build_request(cmd, params), data=data)
+            r = requests.get(self.url(), params=self.build_request(cmd, params), data=data, auth=self.auth)
             return r.json()
         except json.JSONDecodeError:
             print("There was an error decoding the response json")
 
     def post(self, cmd, params=None, data=None):
         try:
-            r = requests.post(self.url(), params=self.build_request(cmd, params), data=data)
+            r = requests.post(self.url(), params=self.build_request(cmd, params), data=data, auth=self.auth)
             return r.text
         except json.JSONDecodeError:
             print("There was an error decoding the response json")
+
+    def clean_library(self):
+        cmd = 'VideoLibrary.Clean'
+
+        result = self.get()
 

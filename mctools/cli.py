@@ -9,9 +9,9 @@ class Context(object):
         self.debug = False
         self.quiet = False
         self.base_url = "192.168.0.4"
-        self.sickrage_api_key = 'fa0adbb947531e91266a7a8bd7cbc3d7'
+        self.sickrage_api_key = None
         self.sickrage_port = 8081
-        self.couchpotato_api_key = '60891312ece04977a59772392bb0f745'
+        self.couchpotato_api_key = None
         self.couchpotato_port = 5050
         self.sickrage = None
         self.couchpotato = None
